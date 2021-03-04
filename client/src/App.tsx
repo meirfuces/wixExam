@@ -41,7 +41,7 @@ export class App extends React.PureComponent<{}, AppState> {
 		const page = this.state.page;
 		this.setState({
 			page:this.state.page,
-			tickets:await api.getTickets(page)
+			tickets:await api.getTickets(page+1)
 			
 		});
 	}
@@ -170,7 +170,8 @@ export class App extends React.PureComponent<{}, AppState> {
 		
 
 			this.setState({
-				tickets:await api.getTicketsWithSearch(val)
+				tickets:await api.getTicketsWithSearch(val),
+				page:1
 			});
 
 		}, 300);
@@ -243,16 +244,17 @@ export class App extends React.PureComponent<{}, AppState> {
 
 
 		  <Page
-		//   pageNumBack= {(this.state.page>1 )?true :false} 
-		//   pageNumNext = {this.state.page<this} 
+		 
+		pageNum= {this.state.page}
 		  clickBack ={()=>{this.backPage()}}
-			clickNext ={()=>{this.nextPage()}}></Page>
+			clickNext ={()=>{this.nextPage()}}>{"page number: "  +(this.state.page+1)+ " ->"}</Page>
 
 		{tickets ? <div className='results'>Showing {tickets.length} results {this.state.counterHide>0?<div> 
 			<p className="restore" onClick={async()=>{
 				this.setState({
 					tickets: await api.getTicketsPage(this.state.page),
-					counterHide:0
+					counterHide:0,
+					page:this.state.page
 				})
 			}
 			}>restore</p>
