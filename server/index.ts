@@ -34,27 +34,30 @@ app.get(APIPath, (req, res) => {
   
   const search: string | null = req.query.search as string || null;
   const DateE :string|null = req.query.DateE as string||null;
-  console.log(DateE? new Date(DateE): "");
   const DateSDate:any = DateE? new Date(DateE): "";
   console.log(search);
   
-  const paginatedData =search ? 
+  let paginatedData =search ? 
   tempData.filter(comp => [comp.content, comp.title].join().includes(search)).slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE)
   :tempData.sort((a,b)=>
      b.creationTime-a.creationTime
   ).slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE);
   
   if (DateE!=null){
-  tempData.forEach(i=>{
-    console.log(new Date(i.creationTime));
-  })
-  tempData.filter(comp => (new Date(comp.creationTime)<DateSDate))
+  // tempData.forEach(i=>{
+  //   console.log(new Date(i.creationTime));
+  // })
+  console.log(DateE);
+  
+  
+  paginatedData= tempData.filter(comp => (new Date(comp.creationTime)<new Date(DateSDate)))
+  
   }
   res.status(200).send(paginatedData);
 });
 
 app.post(APIPath, (req, res) => {
-  console.log(req);
+
   
   // const tickectIndex=tempData? tempData.findIndex((p:any) => {
   //   return p.id === req;
@@ -66,7 +69,7 @@ app.post(APIPath, (req, res) => {
   // tempData.findIndex()
   // @ts-ignore
   const tickets =  JSON.stringify(req.body);
-  // console.log(req.body, tickets);
+  console.log(tickets);
   // fs.writeFileSync('student.json', tickets);
 
   res.status(200);

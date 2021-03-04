@@ -5,8 +5,8 @@ const page = ( props:any ) => {
            <div className ="paginationWrapper ">
 		
         {props.pageNum>1? 
-        <button className="pageItem sides ">
-    <a href = "#page" onClick={props.clickBack}>previous page</a>
+        <button className="pageItem sides " onClick={props.clickBack}>
+      previous page
     
         </button>
 :
@@ -14,8 +14,8 @@ null
 }
 
 
-        <button className="pageItem sides ">
-    <a href = "#page" onClick={props.clickNext}>{props.children}</a>
+        <button className="pageItem sides "  onClick={props.clickNext}>{props.children}
+    
     
         </button>
       

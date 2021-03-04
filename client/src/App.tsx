@@ -6,6 +6,7 @@ import Page from './component/page';
 import SerchBar from './component/searchBar';
 import TicketCard from './component/ticketCard';
 import Axios from 'axios';
+import ticket from './component/ticketCard';
 
 export type AppState = {
 	tickets?: Ticket[],
@@ -69,39 +70,38 @@ export class App extends React.PureComponent<{}, AppState> {
 	saveJson = async(index:string)=>{
 		const stateT:any = {...this.state.tickets};
 		// console.log(event.target.value);
-	
+	try {
 		if (stateT!=null){
-		const tickectIndex= this.state.tickets? this.state.tickets.findIndex((p:Ticket) => {
-			return p.id === index;
-		    }): -1;
-		    let ticketChange:any = JSON.parse(JSON.stringify(stateT[tickectIndex])) ;
-		    ticketChange.title = this.state.titleRename; 
-		    const tickets = JSON.parse(JSON.stringify(this.state.tickets)) ;
-		    tickets[tickectIndex] = ticketChange;
-		   
-		    
-		   
-		//     this.setState( {tickets: tickets} );
+			const tickectIndex= this.state.tickets? this.state.tickets.findIndex((p:Ticket) => {
+				return p.id === index;
+			    }): -1;
+			    let ticketChange:any = JSON.parse(JSON.stringify(stateT[tickectIndex])) ;
+			    ticketChange.title = this.state.titleRename; 
+			    const tickets = JSON.parse(JSON.stringify(this.state.tickets)) ;
+			    tickets[tickectIndex] = ticketChange;
+			this.setState( {tickets: tickets} );
+			}
+	} catch (error) {
+		console.log(error);
 		
+	}
 		
-		
-	     
-		this.setState( {tickets: tickets} );
-		}
 		// let tickets2 = await api.getTickets(this.);
 		// await api.postTickets(tickets2)
 	}
 	
 	renderTickets =  (tickets: Ticket[]) => {
 		const search = this.state.search;
- 
+		const DateE = this.state.DataEnd;
+		const DateS = this.state.DataStart;
 		tickets.filter((t) => (t.title.toLowerCase() + t.content.toLowerCase()).includes(search.toLowerCase()));
-		
-	
+		tickets.filter(comp => (new Date(comp.creationTime)<new Date(DateE)))
+		tickets.filter(comp => (new Date(comp.creationTime)>new Date(DateS)))
+
 		
 		return (<ul className='tickets'>
 		{tickets.map((ticket,index) => (
-			<div>
+			<div key= {index}>
 
 		{/* <TicketCard title={ticket.title}
 
@@ -137,7 +137,7 @@ export class App extends React.PureComponent<{}, AppState> {
 			
 			<footer>
 				<div className='meta-data'>By {ticket.userEmail} | { new Date(ticket.creationTime).toLocaleString()}</div>
-				{ticket.labels ? ticket.labels.map((lb, i) => <p key={i}>{lb}</p>) : null}
+				{ticket.labels ? ticket.labels.map((lb, i) => <p className="label-ticket" key={i}>{lb}</p>) : null}
 			</footer>
 		</li>
 		</div>
@@ -195,14 +195,13 @@ export class App extends React.PureComponent<{}, AppState> {
 	}
 
 	nextPage = async()=>{
-
-		console.log(this.state.page);
+	
+		
 		
 		this.setState({
 			...this.state,
 			page:this.state.page+1
 		})
-		console.log(this.state.page);
 
 		console.log("page now is : " + this.state.page);
 		const tickets: Ticket[]= await api.getTicketsPage(this.state.page)
@@ -222,25 +221,31 @@ export class App extends React.PureComponent<{}, AppState> {
 			dataStart = {(e: any) => {console.log("change");
 			}}
 			></SerchBar>
-			<input type="date" onChange={(e)=>{
-	this.setState({DataStart: e.target.value});
+			<input type="date" onChange={async(e)=>{
+	this.setState({DataStart: e.target.value,
+		tickets: await api.getTicketsWithSearchAdvance(this.state.DataStart)
+	});
 	console.log(this.state);
       }} id="start" name="trip-start"
       value={this.state.DataStart? this.state.DataStart : "2020-07-22" }
        min="2010-01-01" max="2018-12-31"/>
-
+	{this.state.DataStart? <p>after {this.state.DataStart}</p>:null}
 	 <input type="date" id="end" name="trip-start"
 	 value={this.state.DataEnd? this.state.DataEnd : "2020-07-22" }
-	 onChange={(e)=>{
-		this.setState({DataEnd: e.target.value});
-		api.getTicketsWithSearchAdvance(this.state.DataEnd);
+	 onChange={async(e)=>{
+		
+		this.setState({
+			DataEnd: e.target.value,
+			tickets: await api.getTicketsWithSearchAdvance(this.state.DataEnd)
+			
+		});
+	
 		console.log(this.state);
 		
 	}}
        min="2018-01-01" max="2021-03-03"/>
-
-	 <button className ="advance serch">
-		  advance search</button>
+{this.state.DataEnd? <p>before {this.state.DataEnd}</p>:null}
+	
 
 
 		  <Page
