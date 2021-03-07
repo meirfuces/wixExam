@@ -14,13 +14,20 @@ body {
 	h1 {
 		font-weight: 300;
 	}
-
-	.results {
-		color: #7a92a5;
-		font-size: 12px;
-		margin: 12px 5px;
+	.showMe{
+		background: #eee5d5;
+		width: 20%;
+		border: none;
+		padding: 0;
+		float: right;
+		position: Absolute; top: 20px right; 
+		cursor: pointer;
+		margin:0px 15px 0px 750px;
+		border: 1px solid  salmon;
+		font-size: px;
 	}
 	.hideMe {
+		
 		background: #eee5d5;
 		width: 20%;
 		border: none;
@@ -31,8 +38,30 @@ body {
 		margin:0px 10px 0px 750px;
 		border: 1px solid  salmon;
 		font-size: px;
+		&:hover {
+			box-shadow: 0 2px 6px 1px #397fdb;
+		}
 
 	}
+
+	.results {
+		color: #7a92a5;
+		font-size: 12px;
+		margin: 12px 5px;
+	}
+	::-webkit-datetime-edit { padding: 1em; }
+::-webkit-datetime-edit-fields-wrapper { background: silver; }
+::-webkit-datetime-edit-text { color: rgb(89, 148, 12); padding: 0 0.3em; }
+::-webkit-datetime-edit-month-field { color: blue; }
+::-webkit-datetime-edit-day-field { color: green; }
+::-webkit-datetime-edit-year-field { color: rgb(24, 5, 24); }
+::-webkit-inner-spin-button { display: none; }
+
+	
+	
+	.App button.Red {
+		background-color: red;
+	    }
 	.restore{
 
 font-weight: bold;
@@ -41,16 +70,19 @@ font-weight: bold;
 		margin: 3px 2px;
 		font-weight: bold;
 
-		font-size: large;
+		font-size: 14px;
 		background: #6f98bd;
-		width: 40%;
+		width: 20%;
 		border: none;
 		padding: 3;
 		right: 100%;
 
 		
-		color: rgb(0, 41, 153);
+		color: rgb(54, 39, 12);
 		cursor: pointer;
+		&:hover {
+			box-shadow: 0 2px 6px 1px #d39467;
+		}
 	}
 	header {
 		width: 100%;
@@ -132,7 +164,7 @@ font-weight: bold;
 			position: relative;
 
 			&:hover {
-				box-shadow: 0 2px 6px 1px #d3d7da;
+				box-shadow: 0 2px 6px 1px #130800;
 			}
 
 			.title {
@@ -165,20 +197,33 @@ font-weight: bold;
 			footer {
 
 				display: flex;
-				justify-content: space-between;
-
+				// justify-content: space-between;
+				flex-direction: row;
+				text-align:center;
+				position:relative;
 				.meta-data {
 					color: #7a92a5;
 					font-size: 12px;
 					margin: 10px 0;
 					flex-shrink: 0;
+					display:inline-block;
+
 				}
 				
-				.label-ticket2{
-					margin: 0rem 2rem;
-					border-style: dashed;
-					background-color: rgb(255, 255, 255);
-					border-left: 6px solid rgb(0, 255, 234);
+				.label-ticket{
+					position:absolute;
+					right: 0;
+					
+					p {
+					display:inline-block;
+
+						margin: 0rem 1.1rem;
+						padding: 0rem 1.1rem;
+						background-color:#6f98bd;
+						border: 1px solid #0d1114;
+						border-radius: 5px;
+					
+					}
 				}
 			}
 

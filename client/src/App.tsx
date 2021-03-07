@@ -17,7 +17,7 @@ export type AppState = {
 	titleRename: string;
 	page:number;
 	counterHide:number;
-	
+	hasNext:boolean;
 	
 }
 
@@ -33,26 +33,24 @@ export class App extends React.PureComponent<{}, AppState> {
 		page:1,
 		DataStart:'',
 		DataEnd:'',
-		counterHide:0
+		counterHide:0,
+		hasNext:true
 	}
 	
 	searchDebounce: any = null;
 
 	async componentDidMount() {
 		const page = this.state.page;
+		
 		this.setState({
 			page:this.state.page,
-			tickets:await api.getTickets(page+1)
+			tickets:await api.getTickets(page+1,),
+			
 			
 		});
 	}
-	// pageFunction = async(page: number) =>{
-	// 	console.log("page function");
-		
-	// 	api.getTicketsPage(page);
-	// }
+
 	hide = (index: number)=>{
-		console.log(index);
 		
 		const stateT:any =JSON.parse(JSON.stringify(this.state.tickets)) ;
 
@@ -67,7 +65,7 @@ export class App extends React.PureComponent<{}, AppState> {
 		}
 
 	}
-	saveJson = async(index:string)=>{
+	RenameFunc = async(index:string)=>{
 		const stateT:any = {...this.state.tickets};
 		// console.log(event.target.value);
 	try {
@@ -79,17 +77,20 @@ export class App extends React.PureComponent<{}, AppState> {
 			    ticketChange.title = this.state.titleRename; 
 			    const tickets = JSON.parse(JSON.stringify(this.state.tickets)) ;
 			    tickets[tickectIndex] = ticketChange;
-			this.setState( {tickets: tickets} );
+		
+			api.postTickets(tickets, index,this.state.titleRename);
+			this.setState( {tickets: tickets,
+				titleRename:''} );
 			}
 	} catch (error) {
 		console.log(error);
 		
 	}
-		
-		// let tickets2 = await api.getTickets(this.);
-		// await api.postTickets(tickets2)
 	}
 	
+	// canecl = async()=>{
+	// 	this.setState({tickets: await api.getTicketsPage(this.state.page)});
+	// }
 	renderTickets =  (tickets: Ticket[]) => {
 		const search = this.state.search;
 		const DateE = this.state.DataEnd;
@@ -102,9 +103,17 @@ export class App extends React.PureComponent<{}, AppState> {
 		return (<ul className='tickets'>
 		{tickets.map((ticket,index) => (
 			<div key= {index}>
-
-		{/* <TicketCard title={ticket.title}
-
+		
+		{/* 
+		here i try to divide it to component but finally have not time to fix restore function
+		<TicketCard 
+		title={ticket.title}
+			
+		hideMe = {true}
+		hide = {()=>this.hide}
+		id ={ticket.id}
+		// changeTitle = {() => this.nameChangedTitle}
+		TimeCreate = {ticket.creationTime}
 		userEmail= {ticket.userEmail}
 		ChangeNameSave={() => this.saveJson( ticket.id)}
 		></TicketCard> */}
@@ -116,8 +125,8 @@ export class App extends React.PureComponent<{}, AppState> {
 			onChange={(event) => this.nameChangedTitle(event, ticket.id)}>
 
 				</input>
-		
-			<button className="Rename" onClick=   {() => this.saveJson( ticket.id)}>Rename</button>
+				
+			<button className="Rename" onClick=   {() => this.RenameFunc( ticket.id)}>Rename</button>
 			<p className='content'  >{ticket.content}
 				{!this.state.showMore? ticket.content.substring(0,430) + "  .......": ticket.content}
 		</p>
@@ -137,7 +146,8 @@ export class App extends React.PureComponent<{}, AppState> {
 			
 			<footer>
 				<div className='meta-data'>By {ticket.userEmail} | { new Date(ticket.creationTime).toLocaleString()}</div>
-				{ticket.labels ? ticket.labels.map((lb, i) => <p className="label-ticket" key={i}>{lb}</p>) : null}
+				{/* {ticket.labels ?ticket.labels.map((lb, i) => <div className="label-ticket" key={i}><p>{lb}</p></div>) : null} */}
+				{ticket.labels ?<div className="label-ticket">{ticket.labels.map((lb, i) => <p key={i}>{lb}</p >)}</div>: null}
 			</footer>
 		</li>
 		</div>
@@ -145,23 +155,17 @@ export class App extends React.PureComponent<{}, AppState> {
 	</ul>);
 	}
 	nameChangedTitle= (event:any, index:string) =>{
-		
 		this.setState( {titleRename: event.target.value} );
-		
-
 	}
+
 	showMore = ()=>{
 		console.log("showMore");
 		
 		this.setState({
 			showMore: !this.state.showMore
 		})
-		console.log(this.state.showMore);
 	}
-	ChangeTitle = (val: any) =>{
-		console.log("change title");
-		
-	}
+
 	onSearch = async (val: string, newPage?: number, DataStart?: string) => {
 		
 		// clearTimeout(this.searchDebounce);
@@ -178,34 +182,36 @@ export class App extends React.PureComponent<{}, AppState> {
 	}
 	backPage = async()=>{
 
-		console.log(this.state.page);
 		
+	
+
+		const tickets: Ticket[]= await api.getTicketsPage(this.state.page-1)
 		this.setState({
 			...this.state,
 			page:this.state.page-1
 		})
-		console.log(this.state.page);
-
-		console.log("page now is : " + this.state.page);
-		const tickets: Ticket[]= await api.getTicketsPage(this.state.page)
-		// api.getTicketsPage(this.state.page);
 		this.setState({
 			tickets: tickets
 		})
 	}
-
+	restore = async()=>{
+		this.setState({
+			tickets: await api.getTicketsPage(this.state.page),
+			counterHide:0,
+			page:this.state.page
+		})
+	}
 	nextPage = async()=>{
 	
 		
 		
+		
+		const tickets: Ticket[]= await api.getTicketsPage(this.state.page+1)
 		this.setState({
 			...this.state,
 			page:this.state.page+1
 		})
 
-		console.log("page now is : " + this.state.page);
-		const tickets: Ticket[]= await api.getTicketsPage(this.state.page)
-		// api.getTicketsPage(this.state.page);
 		this.setState({
 			tickets: tickets
 		})
@@ -218,32 +224,30 @@ export class App extends React.PureComponent<{}, AppState> {
 			
 			<SerchBar
 			chenged={(e:any) => this.onSearch(e.target.value)}
-			dataStart = {(e: any) => {console.log("change");
+			dataStart = {(e: any) => {
 			}}
 			></SerchBar>
 			<input type="date" onChange={async(e)=>{
 	this.setState({DataStart: e.target.value,
-		tickets: await api.getTicketsWithSearchAdvance(this.state.DataStart)
+		tickets: await api.getTicketsWithSearchDateS(e.target.value)
 	});
-	console.log(this.state);
       }} id="start" name="trip-start"
-      value={this.state.DataStart? this.state.DataStart : "2020-07-22" }
-       min="2010-01-01" max="2018-12-31"/>
+      value={this.state.DataStart? this.state.DataStart : "2018-01-01" }
+       min="2010-01-01" max="2020-03-31"/>
 	{this.state.DataStart? <p>after {this.state.DataStart}</p>:null}
 	 <input type="date" id="end" name="trip-start"
-	 value={this.state.DataEnd? this.state.DataEnd : "2020-07-22" }
+	 value={this.state.DataEnd? this.state.DataEnd : "2020-03-01" }
 	 onChange={async(e)=>{
 		
 		this.setState({
 			DataEnd: e.target.value,
-			tickets: await api.getTicketsWithSearchAdvance(this.state.DataEnd)
+			tickets: await api.getTicketsWithSearchDateEnd(e.target.value)
 			
 		});
 	
-		console.log(this.state);
 		
 	}}
-       min="2018-01-01" max="2021-03-03"/>
+	min="2010-01-01" max="2020-03-31"/>
 {this.state.DataEnd? <p>before {this.state.DataEnd}</p>:null}
 	
 
@@ -251,22 +255,21 @@ export class App extends React.PureComponent<{}, AppState> {
 		  <Page
 		 
 		pageNum= {this.state.page}
+		hasNext = {tickets? tickets.length :0}
 		  clickBack ={()=>{this.backPage()}}
-			clickNext ={()=>{this.nextPage()}}>{"page number: "  +(this.state.page+1)+ " ->"}</Page>
+			clickNext ={()=>{this.nextPage()}}>{"page number: "  +(this.state.page+1)+ " ->"}
+			</Page>
 
-		{tickets ? <div className='results'>Showing {tickets.length} results {this.state.counterHide>0?<div> 
-			<p className="restore" onClick={async()=>{
-				this.setState({
-					tickets: await api.getTicketsPage(this.state.page),
-					counterHide:0,
-					page:this.state.page
-				})
-			}
-			}>restore</p>
+		{tickets ? <div className='results'>Showing {tickets.length} results 
+		{this.state.counterHide>0?
+		<div> 
+			<p className="restore" 
+			onClick={()=>this.restore()}
+			>restore</p>
 			{"("+ this.state.counterHide +" Hidden ticket)"} </div>: ""
-		}</div> : null }	
+		}</div> 
+		: null }	
 			{tickets ? this.renderTickets(tickets) : <h2>Loading..</h2>}
-			{/* <div className ="paginationWrapper "> */}
 			
 			
 		</main>

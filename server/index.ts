@@ -30,12 +30,11 @@ app.get(APIPath, (req, res) => {
   const page: number = req.query.page || 1;
 
 
-  console.log("page num"+ page);
   
   const search: string | null = req.query.search as string || null;
   const DateE :string|null = req.query.DateE as string||null;
+  const DateS :string|null = req.query.DateS as string||null;
   const DateSDate:any = DateE? new Date(DateE): "";
-  console.log(search);
   
   let paginatedData =search ? 
   tempData.filter(comp => [comp.content, comp.title].join().includes(search)).slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE)
@@ -44,33 +43,49 @@ app.get(APIPath, (req, res) => {
   ).slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE);
   
   if (DateE!=null){
-  // tempData.forEach(i=>{
-  //   console.log(new Date(i.creationTime));
-  // })
-  console.log(DateE);
-  
-  
-  paginatedData= tempData.filter(comp => (new Date(comp.creationTime)<new Date(DateSDate)))
-  
+  paginatedData= tempData.filter(comp => (new Date(comp.creationTime)<new Date(DateE)))
+  .slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE)
   }
+  if (DateS!=null){
+    paginatedData= tempData.filter(comp => (new Date(comp.creationTime)>new Date(DateS)))
+    .slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE)
+  }
+ 
   res.status(200).send(paginatedData);
 });
 
 app.post(APIPath, (req, res) => {
 
+const index:any|undefined = req.body.index;
+
+// const urlArr = url;
+const title = req.body.title;
+console.log(title);
+
+
+
+	const tickectIndex= tempData?  tempData.findIndex((p:any) => {
+    return p.id === index;
+
+      }): -1;
+    
+      console.log('rename request');
+      
+      let ticketChange:any = JSON.parse(JSON.stringify(tempData[tickectIndex])) ;
+      ticketChange.title = title; 
+      const tickets = JSON.parse(JSON.stringify(tempData));
+      console.log(title);
+      
+      tickets[tickectIndex] = ticketChange;
+      console.log(tickets[tickectIndex].title);
+      
+      const toSave = JSON.stringify(tickets);
+      // tickets[tickectIndex] = ticketChange;
+      
   
-  // const tickectIndex=tempData? tempData.findIndex((p:any) => {
-  //   return p.id === req;
-  //     }): -1;
-  //     let ticketChange:any = JSON.parse(JSON.stringify(stateT[tickectIndex])) ;
-  //     ticketChange.title = this.state.titleRename; 
-  //     const tickets = JSON.parse(JSON.stringify(this.state.tickets)) ;
-  //     tickets[tickectIndex] = ticketChange;
-  // tempData.findIndex()
+
   // @ts-ignore
-  const tickets =  JSON.stringify(req.body);
-  console.log(tickets);
-  // fs.writeFileSync('student.json', tickets);
+  fs.writeFileSync('data2.json', toSave);
 
   res.status(200);
 });
