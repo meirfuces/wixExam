@@ -1,3 +1,12 @@
 examKey=38
 createdAt=03/03/2021
 candidateEmail=meirfuces@gmail.com
+
+Extra:
+
+1. I added a "checkbox"  which allows to mark if he is interested to mark according to it. 
+The search will be carried out according to the checkbox.
+
+2.With the Rename button you can open a component with input text which allows the user to choose update or cancel.
+by updating the server, the json also changes.
+

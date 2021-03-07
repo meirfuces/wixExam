@@ -9,7 +9,12 @@ const api = createApiClient();
 
 const Ticketes = (props: ticketProps) => {
       const [ticketsState, setTicketsState] = useState<Ticket[]>(props.tickets);
- 
+      console.log(props.tickets);
+      
+      React.useEffect(() => {
+            setTicketsState(props.tickets)
+            
+        }, [props.tickets]);
       const RenameFunc = async(index:number, title:string)=>{
                       const id =  ticketsState[index].id;
 			await api.postTickets(id, title);
@@ -28,6 +33,7 @@ const Ticketes = (props: ticketProps) => {
             props.hideTicket()
 
 	}
+      
       return (<React.Fragment><ul className='tickets'>
       {ticketsState.map((ticket,index) => (
             <div key= {index}>

@@ -3,7 +3,7 @@ import './App.scss';
 import './pageination.scss';
 import {createApiClient, Ticket,  BodySearch, BodySearchCheckList} from './api';
 import Page from './component/page';
-import SerchBar from './component/searchBar';
+import SearchBar from './component/searchBar';
 import TicketCard from './component/ticketCard';
 import Axios from 'axios';
 import ticket from './component/ticketCard';
@@ -59,20 +59,15 @@ export class App extends React.PureComponent<{}, AppState> {
 	}
 	
 
-	renderTickets =  (tickets: Ticket[]) => {
-		return <Ticketes tickets={tickets} hideTicket={this.hideTicket}></Ticketes>
 
+
+	onSearch = async (bodySearch:BodySearch, bodySearchCheckList:BodySearchCheckList) => {
 		
-	
-	}
-
-
-	onSearch = async () => {
-		
-		const bodySearch: BodySearch = Object.assign({},...Object.keys(this.state.bodySearch).map((key) => (this.state.bodySearchCheckList[key]? {[key]:this.state.bodySearch[key]}: undefined)))
+		const bodySearchToSearch: BodySearch = Object.assign({},...Object.keys(bodySearch).map((key) => (bodySearchCheckList[key]? {[key]:bodySearch[key]}: undefined)))
+		console.log(bodySearch, bodySearchCheckList);
 		
 		this.setState({
-			tickets:await api.getTicketsWithSearch(bodySearch),
+			tickets:await api.getTicketsWithSearch(bodySearchToSearch),
 			// page:1
 		});
 		
@@ -113,61 +108,18 @@ export class App extends React.PureComponent<{}, AppState> {
 			tickets: tickets
 		})
 	}
-	onChangeWord = async(word:string) =>{
-		clearTimeout(this.searchDebounce);
-		this.searchDebounce = setTimeout(async () => {
-		
-			this.setState({
-				bodySearch:{...this.state.bodySearch, word},
-				
-			})
-		
 
-		}, 300);
-	}
 	render() {	
 		
 		const {tickets} = this.state;
-
-		return (<main>
-				<button className="sendSearch" onClick={this.onSearch}>send</button>
-			<SerchBar
-			chenged={(e:any) =>{
-				this.onChangeWord(e.target.value)
-			}}
 		
-			></SerchBar>
-				<input type="checkbox" onClick={()=>this.setState({
-	 	bodySearchCheckList:{...this.state.bodySearchCheckList, word: !this.state.bodySearchCheckList.word},
- })} ></input>
-			<input type="date" onChange={async(e:any)=>{
-	  this.setState({bodySearch:{...this.state.bodySearch, startDate: e.target.value},
-		// tickets: await api.getTicketsWithSearchDateS(e.target.value)
-	});
-      }} id="start" name="trip-start"
-      value={this.state.bodySearch.startDate? this.state.bodySearch.startDate : "2018-01-01" }
-       min="2010-01-01" max="2020-03-31"/>
-	{this.state.bodySearch.startDate? <p>after {this.state.bodySearch.startDate}</p>:null}
-	<input type="checkbox" onClick={()=>this.setState({
-	 	bodySearchCheckList:{...this.state.bodySearchCheckList, startDate: !this.state.bodySearchCheckList.startDate},
- })} ></input>
-	 <input type="date" id="end" name="trip-start"
-	 value={this.state.bodySearch.endDate? this.state.bodySearch.endDate : "2020-03-01" }
-	 onChange={async(e)=>{
+		return (
+		<main>
 		
-		this.setState({
-			bodySearch:{...this.state.bodySearch, endDate: e.target.value},
-			
-		});
-	
-	}}
-	min="2010-01-01" max="2020-03-31"/>
-{this.state.bodySearch.endDate? <p>before {this.state.bodySearch.endDate}</p>:null}
-	
- <input type="checkbox" onClick={()=>this.setState({
-	 	bodySearchCheckList:{...this.state.bodySearchCheckList, endDate: !this.state.bodySearchCheckList.endDate},
- })} ></input>
+			<SearchBar
 
+			onSearch={this.onSearch}
+			></SearchBar>
 		  <Page
 		 
 		pageNum= {this.state.page}
@@ -185,7 +137,7 @@ export class App extends React.PureComponent<{}, AppState> {
 			{"("+ this.state.counterHide +" Hidden ticket)"} </div>: ""
 		}</div> 
 		: null }	
-			{tickets ? this.renderTickets(tickets) : <h2>Loading..</h2>}
+			{tickets ?  <Ticketes tickets={tickets} hideTicket={this.hideTicket}></Ticketes> : <h2>Loading..</h2>}
 			
 			
 		</main>

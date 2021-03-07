@@ -48,11 +48,11 @@ export const createApiClient = (): ApiClient => {
         },
 
 
-        postTickets: async(index: string, title: string) => {
+        postTickets: (index: string, title: string) => {
             
             const url = {index: index,
             title: title};
-            return await axios.post(APIRootPath, url);
+            return  axios.post(APIRootPath, url);
         }
 }
 }
