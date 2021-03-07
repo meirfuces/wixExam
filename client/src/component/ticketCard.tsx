@@ -1,70 +1,66 @@
-import React, {useState} from 'react';
+import React, { useState } from 'react';
 import { Ticket } from '../api';
- type ticketProps = {
-      hideMe:boolean;
-   
-      hide:any;
-    
-      id:string;
-      title:string;
-      ChangeNameSave:any;
-      userEmail:any;
-      TimeCreate:any;
+type ticketProps = {
+      hideMe: boolean;
+      hide: any;
+      ticket:Ticket;
+      RenameFunc: any;
+      // nameChangedTitle: any;
 }
 
-const TicketCard = ( props:ticketProps ) => {
-      const [title1, setTitle] = useState(props.title);
-      const [title2, setTitleRename] = useState('');
-
-      const [hideMeState, setHide] = useState(props.hideMe);
-      const [counterHide, setCounter] = useState(0);
-      const changeTitle =(event:any,id:any) =>{
-            console.log("page: " + event.target.value);
-            setTitleRename(event.target.value);
-      }
-      const ChangeNameSave =()=>{
-            setTitle(title2);
-      }
-      const hide =()=>{
-         setCounter(counterHide+1)
-         
-            setHide(false);
-      }
-      const showMe =()=>{
-            setHide(true);
-      }
-    return (
-    
+const TicketCard = (props: ticketProps) => {
+      const [showMore, setShowMore] = useState<boolean>(false);
+      const [changeTitle, setChangeTitle] = useState<boolean>(false);
+      const [tempTitle, setTempTitle] = useState<string>('');
+      const [title, setTitle] = useState<string>(props.ticket.title);
+      // const changeTitleFunctio
+      return (
 
 
-    
-      
-      <li key={props.id} className='ticket'>
-    
-    {counterHide? <p>{counterHide}</p>:null}
-      {hideMeState? <div>
-            <button className="hideMe" onClick={hide}
-            >hide me</button>
-      <h5 className='title'>{title1}</h5>
-      <input type= "text" placeholder="Change the title" onChange={(event)=>changeTitle(event,props.id)} >
-            </input>
-            <button className="Rename" onClick=   {ChangeNameSave}>Rename</button>
 
-      <footer>
-            <div className='meta-data'>By {props.userEmail} | { new Date(props.TimeCreate).toLocaleString()}</div>
-           
-      </footer> 
-      </div>:
-       <button className="showMe" onClick={showMe}
-       >show Me</button>}
-      
-</li>
+            <li key={props.ticket.id} className='ticket'>
+                  <button className="hideMe" onClick={props.hide}>hide me</button>
+                  <h5 className='title'>{title}</h5>
+              {  changeTitle?  
 
-    )
+                  <React.Fragment>
+                        <input type="text"
+                        placeholder="Change the title"
+                        onChange={(event:any)=>{setTempTitle(event.target.value)}}>
+                  </input>
+                        <button className="Rename" onClick={()=>{props.RenameFunc(tempTitle)
+                              setTitle(tempTitle)
+                        }}>update</button>
+                  <button className="Rename" onClick={()=>{setChangeTitle(false)}}>cancel</button></React.Fragment>:
+                  <button className="Rename" onClick={()=>{setChangeTitle(true)}}>Rename</button>
+                  
+                  }
+                  <p className='content'  >{props.ticket.content}
+                        {!showMore ? props.ticket.content.substring(0, 430) + "  ......." : props.ticket.content}
+                  </p>
+                  {props.ticket.content.length > 430 &&
+                        <div className="">
+                              <button className="" onClick={() => {
+                                   setShowMore(!showMore);
+                              }}>{!showMore ? "show more" : "show less"}
+                              </button>
 
-    
+                        </div>
+
+
+                  }
+
+                  <footer>
+                        <div className='meta-data'>By {props.ticket.userEmail} | {new Date(props.ticket.creationTime).toLocaleString()}</div>
+                        {props.ticket.labels ? <div className="label-ticket">{props.ticket.labels.map((lb, i) => <p key={i}>{lb}</p >)}</div> : null}
+                  </footer>
+            </li>
+
+
+
+      )
+
+
 };
 
 export default TicketCard;
-
-

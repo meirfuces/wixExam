@@ -11,16 +11,15 @@ export type Ticket = {
     userEmail: string;
     labels?: string[];
 }
-
+export type BodySearch = {word?: string, startDate?:string , endDate?:string, page?: number, [key: string]: number | string | undefined}
+export type BodySearchCheckList = {word: boolean, startDate: boolean, endDate:boolean, page: boolean,     [key: string]: number |  boolean | undefined}
 export type ApiClient = {
     getTickets: (page:number) => Promise<Ticket[]>;
     getTicketsPage: (page:number) => Promise<Ticket[]>;
-    getTicketsWithSearch: (search:string) => Promise<Ticket[]>;
-    getTicketsWithSearchDateS:(Datestart:string) => Promise<Ticket[]>;
-    getTicketsWithSearchDateEnd:(DateEnd:string) => Promise<Ticket[]>;
-    postTickets: (ticketes:Ticket[] | undefined, index: string, title:string) => Promise<Ticket[]>;
+    getTicketsWithSearch: (bodySearch: BodySearch) => Promise<Ticket[]>;
+
+    postTickets: (index: string, title:string) => Promise<Ticket[]>;
     
-    fewCheck: (search:string | undefined,Date:string|undefined ) => Promise<Ticket[]>;
 
 }
 
@@ -41,35 +40,19 @@ export const createApiClient = (): ApiClient => {
             }
      
         },
-        getTicketsWithSearch: (search: string) => {
+        getTicketsWithSearch: (bodySearch: BodySearch) => {
             
-            return axios.get([APIRootPath, '?search=', search].join('')).then((res) => {
+            return axios.put([APIRootPath, 'search'].join('/'), bodySearch).then((res) => {
                 
                 return res.data});
         },
-        getTicketsWithSearchDateEnd:(DateEnd:string) =>{
-            console.log("DateEnd is " +DateEnd);
+
+
+        postTickets: async(index: string, title: string) => {
             
-            return axios.get([APIRootPath, '?DateE=', DateEnd].join('')).then((res) => {
-                return res.data});
-        },
-        getTicketsWithSearchDateS:(Datestart:string) =>{
-            console.log("DateStart is " +Datestart);
-            
-            return axios.get([APIRootPath, '?DateS=', Datestart].join('')).then((res) => {
-                return res.data});
-        },
-        fewCheck:(search=undefined,dateEnd=undefined) =>{
-            console.log("DateEnd is " +dateEnd);
-            const url = search && dateEnd? 'ddd' : search? '':dateEnd?'':'';
-            return axios.get([APIRootPath, '?DateE=', dateEnd].join('')).then((res) => {
-                return res.data});
-        },
-        postTickets: (ticketes: Ticket[]|undefined, index: string, title: string) => {
-         
             const url = {index: index,
             title: title};
-            return axios.post([APIRootPath+'?index=', url].join(''),url);
+            return await axios.post(APIRootPath, url);
         }
 }
 }

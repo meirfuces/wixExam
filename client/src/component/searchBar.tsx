@@ -6,7 +6,7 @@ const serchBar = ( props:any ) => {
           <div>
       <h1>Tickets List</h1>
 			
-      <header>
+      <header style={{'width':'300px'}}>
 			
                   <input type="search" placeholder="Search..." 
                   onChange={props.chenged}/>

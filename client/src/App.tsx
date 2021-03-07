@@ -1,23 +1,23 @@
 import React from 'react';
 import './App.scss';
 import './pageination.scss';
-import {createApiClient, Ticket} from './api';
+import {createApiClient, Ticket,  BodySearch, BodySearchCheckList} from './api';
 import Page from './component/page';
 import SerchBar from './component/searchBar';
 import TicketCard from './component/ticketCard';
 import Axios from 'axios';
 import ticket from './component/ticketCard';
+import Ticketes from './component/ticketes';
 
 export type AppState = {
 	tickets?: Ticket[],
-	search: string,
-	DataStart: string,
-	DataEnd: string
 	showMore: boolean;
 	titleRename: string;
 	page:number;
 	counterHide:number;
 	hasNext:boolean;
+	bodySearch:BodySearch,
+	bodySearchCheckList:BodySearchCheckList,
 	
 }
 
@@ -27,14 +27,14 @@ const api = createApiClient();
 export class App extends React.PureComponent<{}, AppState> {
 
 	state: AppState = {
-		search: '',
 		showMore: false,
 		titleRename: '',
 		page:1,
-		DataStart:'',
-		DataEnd:'',
+		bodySearch:{},
 		counterHide:0,
-		hasNext:true
+		hasNext:true,
+	bodySearchCheckList: {word: false, startDate: false, endDate:false, page: false},
+
 	}
 	
 	searchDebounce: any = null;
@@ -50,135 +50,32 @@ export class App extends React.PureComponent<{}, AppState> {
 		});
 	}
 
-	hide = (index: number)=>{
-		
-		const stateT:any =JSON.parse(JSON.stringify(this.state.tickets)) ;
 
-		if (stateT!= null){
-			let tickets ;
-		 stateT.splice(index,1);
+	hideTicket = ()=>{
 		this.setState({
-			tickets:stateT,
 			counterHide: this.state.counterHide+1
 		
 		});
-		}
-
-	}
-	RenameFunc = async(index:string)=>{
-		const stateT:any = {...this.state.tickets};
-		// console.log(event.target.value);
-	try {
-		if (stateT!=null){
-			const tickectIndex= this.state.tickets? this.state.tickets.findIndex((p:Ticket) => {
-				return p.id === index;
-			    }): -1;
-			    let ticketChange:any = JSON.parse(JSON.stringify(stateT[tickectIndex])) ;
-			    ticketChange.title = this.state.titleRename; 
-			    const tickets = JSON.parse(JSON.stringify(this.state.tickets)) ;
-			    tickets[tickectIndex] = ticketChange;
-		
-			api.postTickets(tickets, index,this.state.titleRename);
-			this.setState( {tickets: tickets,
-				titleRename:''} );
-			}
-	} catch (error) {
-		console.log(error);
-		
-	}
 	}
 	
-	// canecl = async()=>{
-	// 	this.setState({tickets: await api.getTicketsPage(this.state.page)});
-	// }
+
 	renderTickets =  (tickets: Ticket[]) => {
-		const search = this.state.search;
-		const DateE = this.state.DataEnd;
-		const DateS = this.state.DataStart;
-		tickets.filter((t) => (t.title.toLowerCase() + t.content.toLowerCase()).includes(search.toLowerCase()));
-		tickets.filter(comp => (new Date(comp.creationTime)<new Date(DateE)))
-		tickets.filter(comp => (new Date(comp.creationTime)>new Date(DateS)))
+		return <Ticketes tickets={tickets} hideTicket={this.hideTicket}></Ticketes>
 
 		
-		return (<ul className='tickets'>
-		{tickets.map((ticket,index) => (
-			<div key= {index}>
-		
-		{/* 
-		here i try to divide it to component but finally have not time to fix restore function
-		<TicketCard 
-		title={ticket.title}
-			
-		hideMe = {true}
-		hide = {()=>this.hide}
-		id ={ticket.id}
-		// changeTitle = {() => this.nameChangedTitle}
-		TimeCreate = {ticket.creationTime}
-		userEmail= {ticket.userEmail}
-		ChangeNameSave={() => this.saveJson( ticket.id)}
-		></TicketCard> */}
-		<li key={ticket.id} className='ticket'>
-			<button className="hideMe" onClick={()=>this.hide(index)}>hide me</button>
-			<h5 className='title'>{ticket.title}</h5>
-			<input type= "text" 
-			placeholder="Change the title" 
-			onChange={(event) => this.nameChangedTitle(event, ticket.id)}>
-
-				</input>
-				
-			<button className="Rename" onClick=   {() => this.RenameFunc( ticket.id)}>Rename</button>
-			<p className='content'  >{ticket.content}
-				{!this.state.showMore? ticket.content.substring(0,430) + "  .......": ticket.content}
-		</p>
-		{ticket.content.length>430 &&
-		<div className ="">
-		<button className="" onClick={()=>{
-			this.setState({
-				showMore: !this.state.showMore
-			})
-		} }>{!this.state.showMore? "show more" : "show less"}
-		 </button> 
-		
-		 </div>
-		
-		
-	}
-			
-			<footer>
-				<div className='meta-data'>By {ticket.userEmail} | { new Date(ticket.creationTime).toLocaleString()}</div>
-				{/* {ticket.labels ?ticket.labels.map((lb, i) => <div className="label-ticket" key={i}><p>{lb}</p></div>) : null} */}
-				{ticket.labels ?<div className="label-ticket">{ticket.labels.map((lb, i) => <p key={i}>{lb}</p >)}</div>: null}
-			</footer>
-		</li>
-		</div>
-		))}
-	</ul>);
-	}
-	nameChangedTitle= (event:any, index:string) =>{
-		this.setState( {titleRename: event.target.value} );
+	
 	}
 
-	showMore = ()=>{
-		console.log("showMore");
+
+	onSearch = async () => {
+		
+		const bodySearch: BodySearch = Object.assign({},...Object.keys(this.state.bodySearch).map((key) => (this.state.bodySearchCheckList[key]? {[key]:this.state.bodySearch[key]}: undefined)))
 		
 		this.setState({
-			showMore: !this.state.showMore
-		})
-	}
-
-	onSearch = async (val: string, newPage?: number, DataStart?: string) => {
+			tickets:await api.getTicketsWithSearch(bodySearch),
+			// page:1
+		});
 		
-		// clearTimeout(this.searchDebounce);
-
-		this.searchDebounce = setTimeout(async () => {
-		
-
-			this.setState({
-				tickets:await api.getTicketsWithSearch(val),
-				page:1
-			});
-
-		}, 300);
 	}
 	backPage = async()=>{
 
@@ -196,7 +93,7 @@ export class App extends React.PureComponent<{}, AppState> {
 	}
 	restore = async()=>{
 		this.setState({
-			tickets: await api.getTicketsPage(this.state.page),
+			// tickets: await api.getTicketsPage(this.state.page),
 			counterHide:0,
 			page:this.state.page
 		})
@@ -216,41 +113,60 @@ export class App extends React.PureComponent<{}, AppState> {
 			tickets: tickets
 		})
 	}
+	onChangeWord = async(word:string) =>{
+		clearTimeout(this.searchDebounce);
+		this.searchDebounce = setTimeout(async () => {
+		
+			this.setState({
+				bodySearch:{...this.state.bodySearch, word},
+				
+			})
+		
 
+		}, 300);
+	}
 	render() {	
+		
 		const {tickets} = this.state;
 
 		return (<main>
-			
+				<button className="sendSearch" onClick={this.onSearch}>send</button>
 			<SerchBar
-			chenged={(e:any) => this.onSearch(e.target.value)}
-			dataStart = {(e: any) => {
+			chenged={(e:any) =>{
+				this.onChangeWord(e.target.value)
 			}}
+		
 			></SerchBar>
-			<input type="date" onChange={async(e)=>{
-	this.setState({DataStart: e.target.value,
-		tickets: await api.getTicketsWithSearchDateS(e.target.value)
+				<input type="checkbox" onClick={()=>this.setState({
+	 	bodySearchCheckList:{...this.state.bodySearchCheckList, word: !this.state.bodySearchCheckList.word},
+ })} ></input>
+			<input type="date" onChange={async(e:any)=>{
+	  this.setState({bodySearch:{...this.state.bodySearch, startDate: e.target.value},
+		// tickets: await api.getTicketsWithSearchDateS(e.target.value)
 	});
       }} id="start" name="trip-start"
-      value={this.state.DataStart? this.state.DataStart : "2018-01-01" }
+      value={this.state.bodySearch.startDate? this.state.bodySearch.startDate : "2018-01-01" }
        min="2010-01-01" max="2020-03-31"/>
-	{this.state.DataStart? <p>after {this.state.DataStart}</p>:null}
+	{this.state.bodySearch.startDate? <p>after {this.state.bodySearch.startDate}</p>:null}
+	<input type="checkbox" onClick={()=>this.setState({
+	 	bodySearchCheckList:{...this.state.bodySearchCheckList, startDate: !this.state.bodySearchCheckList.startDate},
+ })} ></input>
 	 <input type="date" id="end" name="trip-start"
-	 value={this.state.DataEnd? this.state.DataEnd : "2020-03-01" }
+	 value={this.state.bodySearch.endDate? this.state.bodySearch.endDate : "2020-03-01" }
 	 onChange={async(e)=>{
 		
 		this.setState({
-			DataEnd: e.target.value,
-			tickets: await api.getTicketsWithSearchDateEnd(e.target.value)
+			bodySearch:{...this.state.bodySearch, endDate: e.target.value},
 			
 		});
 	
-		
 	}}
 	min="2010-01-01" max="2020-03-31"/>
-{this.state.DataEnd? <p>before {this.state.DataEnd}</p>:null}
+{this.state.bodySearch.endDate? <p>before {this.state.bodySearch.endDate}</p>:null}
 	
-
+ <input type="checkbox" onClick={()=>this.setState({
+	 	bodySearchCheckList:{...this.state.bodySearchCheckList, endDate: !this.state.bodySearchCheckList.endDate},
+ })} ></input>
 
 		  <Page
 		 
@@ -260,7 +176,7 @@ export class App extends React.PureComponent<{}, AppState> {
 			clickNext ={()=>{this.nextPage()}}>{"page number: "  +(this.state.page+1)+ " ->"}
 			</Page>
 
-		{tickets ? <div className='results'>Showing {tickets.length} results 
+		{tickets ? <div className='results'>Showing {tickets.length - this.state.counterHide} results 
 		{this.state.counterHide>0?
 		<div> 
 			<p className="restore" 
